@@ -1,69 +1,102 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
+using System.Linq;
+using System.Reflection;
+using Unity.Mathematics;
+using Unity.Properties;
 using UnityEngine;
 
 [Serializable]
-public struct TileInfo
+public struct RoomInfo
 {
-    public string name;
-    public int tile;
-    public List<int> potentialNeighbours;
+    public List<int> matrixIndices;
+    public RoomInfo(List<int> indices)
+    {
+        matrixIndices = indices;
+    }
 }
 
 public class Generate2DDungeon : MonoBehaviour
 {
+    public GameObject wallPrefab, floorPrefab;
+
     public int dungeonWidth, dungeonHeight;
 
     public int[] grid;
 
-    public List<TileInfo> tileInfo = new List<TileInfo>();
+    public int maxRoomWidth, maxRoomHeight, amountOfRoomsToSpawn;
 
-    public GameObject Floor, Wall;
+    public List<RoomInfo> roomInfo = new List<RoomInfo>();
 
     // Start is called before the first frame update
     void Start()
     {
-        GenerateDungeon();
+        grid = new int[dungeonHeight * dungeonWidth];
+        for (int i = 0; i < amountOfRoomsToSpawn; i++)
+        {
+            int randomWidth = UnityEngine.Random.Range(2, maxRoomWidth + 1);
+            int randomHeight = UnityEngine.Random.Range(2, maxRoomHeight + 1);
+            GenerateRoomMatrixCoords(randomWidth, randomHeight);
+        }
+
+        for (int i = 0; i < roomInfo.Count; i++)
+        {
+            CheckIfRoomOverlap(i);
+        }
+
+        StartCoroutine(GenerateRoomTiles());
     }
 
-    void GenerateDungeon()
+    void GenerateRoomMatrixCoords(int roomWidth, int roomHeight)
     {
-        grid = new int[dungeonHeight * dungeonWidth];
-
-        //int randomPoint = 4;
-        int randomPoint = UnityEngine.Random.Range(0, dungeonHeight * dungeonWidth);
-
-        grid[randomPoint] = 1;
-
-        int[] neighbours = new int[4];
-        int neighbourIndex = 0;
-
-        //check up, right, down, left
-        //add all directions to a temp array
-        neighbours[neighbourIndex++] = (randomPoint - dungeonWidth) < 0 ? -1 : randomPoint - dungeonWidth;//up 
-        neighbours[neighbourIndex++] = randomPoint % dungeonWidth != 0 ? -1 : randomPoint + 1;//right
-        neighbours[neighbourIndex++] = randomPoint % (dungeonWidth - 1) != 0 ? -1 : randomPoint - 1;//left
-        neighbours[neighbourIndex++] = (randomPoint + dungeonWidth) > (dungeonWidth * dungeonHeight) ? -1 : randomPoint + dungeonWidth;//down
-
-        print($"{neighbours[0]} up");
-        print($"{neighbours[1]} right");
-        print($"{neighbours[2]} left");
-        print($"{neighbours[3]} down");
+        //spawn room within matrix bounds
+        int centerCoordsX = UnityEngine.Random.Range(roomWidth / 2 + 1, dungeonWidth - (roomWidth / 2) - 1);
+        int centerCoordsY = UnityEngine.Random.Range(roomHeight / 2 + 1, dungeonHeight - (roomHeight / 2) - 1);
 
         int index = 0;
-        for (int i = 0; i < dungeonHeight; i++)
+        int[] indicesArray = new int[roomWidth * roomHeight];
+
+        //top of room starts at this index
+        int startIndex = centerCoordsY * dungeonWidth + centerCoordsX;
+
+        for (int i = 0; i < roomHeight; i++)
         {
-            for (int j = 0; j < dungeonWidth; j++)
+            for (int j = 0; j < roomWidth; j++)
             {
-                if (grid[index++] == 1)
+                indicesArray[index++] = startIndex + (i * dungeonWidth) + j;
+            }
+        }
+        roomInfo.Add(new RoomInfo(indicesArray.ToList()));
+    }
+
+    void CheckIfRoomOverlap(int indexToCheck)
+    {
+        List<int> indicesToCheck = roomInfo[indexToCheck].matrixIndices;
+
+        for (int i = 0; i < roomInfo.Count; i++)
+        {
+            if (i == indexToCheck) continue;
+            foreach (var item in roomInfo[i].matrixIndices)
+            {
+                if (indicesToCheck.Contains(item))
                 {
-                    Instantiate(Wall, new Vector3(j + 0.5f, 0, i + 0.5f), Quaternion.identity);
+                    print($"list {i} & list {indexToCheck} overlap! | Removing list {i}");
+                    roomInfo.RemoveAt(i);
+                    break;
                 }
-                else
-                {
-                    Instantiate(Floor, new Vector3(j + 0.5f, 0, i + 0.5f), Quaternion.identity);
-                }
+            }
+        }
+    }
+
+    IEnumerator GenerateRoomTiles()
+    {
+        foreach (var item in roomInfo)
+        {
+            foreach (var indices in item.matrixIndices)
+            {
+                Instantiate(floorPrefab, new Vector3(indices % dungeonWidth, 0, (int)(indices / dungeonWidth)), quaternion.identity);
+                yield return new WaitForSeconds(.02f);
             }
         }
     }

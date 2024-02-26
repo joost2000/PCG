@@ -456,18 +456,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42a55f6a21cd8f44ea049b9847391666, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dungeonWidth: 25
-  dungeonHeight: 25
+  dungeonWidth: 50
+  dungeonHeight: 50
   grid: 
-  tileInfo:
-  - name: Floor
-    tile: 1
-    potentialNeighbours: 
-  - name: Wall
-    tile: 2
-    potentialNeighbours: 
-  Floor: {fileID: 161260392354727266, guid: 809ffdcd1f98fe44983c5e68fc0eb261, type: 3}
-  Wall: {fileID: 8762477676499079318, guid: 687a664f2c4983b4b8f366f5805c75a8, type: 3}
+  maxRoomWidth: 10
+  maxRoomHeight: 10
+  amountOfRoomsToSpawn: 5
+  roomInfo: []
+  filteredRooms: []
 --- !u!4 &1764216978
 Transform:
   m_ObjectHideFlags: 0
