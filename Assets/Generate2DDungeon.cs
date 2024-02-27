@@ -1,19 +1,19 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Unity.Mathematics;
-using Unity.Properties;
 using UnityEngine;
 
 [Serializable]
 public struct RoomInfo
 {
+    public int width, height;
     public List<int> matrixIndices;
-    public RoomInfo(List<int> indices)
+    public RoomInfo(List<int> indices, int width, int height)
     {
         matrixIndices = indices;
+        this.width = width;
+        this.height = height;
     }
 }
 
@@ -45,7 +45,7 @@ public class Generate2DDungeon : MonoBehaviour
             CheckIfRoomOverlap(i);
         }
 
-        StartCoroutine(GenerateRoomTiles());
+        GenerateRoomTiles();
     }
 
     void GenerateRoomMatrixCoords(int roomWidth, int roomHeight)
@@ -67,9 +67,13 @@ public class Generate2DDungeon : MonoBehaviour
                 indicesArray[index++] = startIndex + (i * dungeonWidth) + j;
             }
         }
-        roomInfo.Add(new RoomInfo(indicesArray.ToList()));
+        roomInfo.Add(new RoomInfo(indicesArray.ToList(), roomWidth, roomHeight));
     }
 
+    /// <summary>
+    /// check if the room overlaps with any other room, if so remove the overlapping room
+    /// </summary>
+    /// <param name="indexToCheck"></param>
     void CheckIfRoomOverlap(int indexToCheck)
     {
         List<int> indicesToCheck = roomInfo[indexToCheck].matrixIndices;
@@ -89,15 +93,29 @@ public class Generate2DDungeon : MonoBehaviour
         }
     }
 
-    IEnumerator GenerateRoomTiles()
+    void GenerateRoomTiles()
     {
         foreach (var item in roomInfo)
         {
             foreach (var indices in item.matrixIndices)
             {
-                Instantiate(floorPrefab, new Vector3(indices % dungeonWidth, 0, (int)(indices / dungeonWidth)), quaternion.identity);
-                yield return new WaitForSeconds(.02f);
+                Instantiate(floorPrefab, new Vector3(indices % dungeonWidth, 0, indices / dungeonWidth), quaternion.identity, transform);
+                // grid[indices] = 1;
             }
         }
+    }
+
+    /// <summary>
+    /// Check the edges of a room to see if the room has adjacent rooms
+    /// </summary>
+    bool CheckEdges(RoomInfo context)
+    {
+        //check for neighbour above
+        for (int i = 0; i < context.width; i++)
+        {
+            if (grid[context.matrixIndices[i] - dungeonWidth] == 1) return true;
+        }
+
+        return false;
     }
 }

@@ -209,8 +209,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.41012204, y: -0.5764161, z: 0.41136667, w: 0.5747364}
+  m_LocalPosition: {x: 42.36992, y: 40.69773, z: 23.430988}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -460,12 +460,12 @@ MonoBehaviour:
     type: 3}
   floorPrefab: {fileID: 161260392354727266, guid: 809ffdcd1f98fe44983c5e68fc0eb261,
     type: 3}
-  dungeonWidth: 50
-  dungeonHeight: 50
+  dungeonWidth: 10
+  dungeonHeight: 10
   grid: 
   maxRoomWidth: 10
   maxRoomHeight: 10
-  amountOfRoomsToSpawn: 50
+  amountOfRoomsToSpawn: 2
   roomInfo: []
 --- !u!4 &1764216978
 Transform:
